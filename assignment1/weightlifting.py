@@ -53,15 +53,13 @@ def weightlifting_recursive(P: List[int], w: int, p: int) -> bool:
     # 1. Add base case(s)
     if w == 0: # if the weight is 0, we have found a solution
         return True
-    if w < 0: # if the weight is negative, we have not found a solution
+    if w < 0: # if the weight is negative, we have not found a solution and never will
         return False
-    if p == 0: # if we have no more plates to choose from, we have not found a solution
+    if p == 0 and w != 0: # if we have no more plates to choose from, we have not found a solution (the last w!=0 is redundant but included for clarity)
         return False
     # 2. add recursive case(s)
     return weightlifting_recursive(P, w - P[p-1], p - 1) or weightlifting_recursive(P, w, p - 1) # Either we choose the weight or we don't
 
-
-# recursion variant:
 def weightlifting_top_down(P: List[int], w: int,
                            dp_matrix: List[List[None]]) -> bool:
     '''
@@ -71,9 +69,24 @@ def weightlifting_top_down(P: List[int], w: int,
           P = [2, 32, 234, 35, 12332, 1, 7, 56]
           weightlifting_top_down(P, 299, dp_matrix) returns True
           weightlifting_top_down(P, 11, dp_matrix) returns False
-    '''
-    pass
-
+    ''' 
+    if w < 0: # if the weight is negative, we have not found a solution and never will
+        return False
+    
+    P_size = len(P)
+    if dp_matrix[P_size][w] is not None: # if the value is already calculated, return it
+        return dp_matrix[P_size][w]
+    
+    if w == 0: # if the weight is 0, we have found a solution
+        dp_matrix[P_size][w] = True
+        return True
+    
+    if P_size == 0 and w != 0: # if we have no more plates to choose from, we have not found a solution (the last w!=0 is redundant but included for clarity)
+        dp_matrix[P_size][w] = False
+        return False    
+    
+    dp_matrix[P_size][w] = weightlifting_top_down(P[:-1], w - P[-1], dp_matrix) or weightlifting_top_down(P[:-1], w, dp_matrix) # Either we choose the weight or we don't    
+    return dp_matrix[P_size][w]
 
 def weightlifting_bottom_up(P: List[int], w: int,
                             dp_matrix: List[List[None]]) -> bool:
@@ -84,11 +97,36 @@ def weightlifting_bottom_up(P: List[int], w: int,
           P = [2, 32, 234, 35, 12332, 1, 7, 56]
           weightlifting_bottom_up(P, 299, dp_matrix) returns True
           weightlifting_bottom_up(P, 11, dp_matrix) returns False
-    '''
+    '''    
+    # print(f"len(P): {len(P)}")
+    # print(f"w: {w}")
+    # print(dp_matrix)
+
     # 1. Fill first column and row of dp_matrix
+    for r in range(len(dp_matrix)):  
+        dp_matrix[r][0] = True 
+    for c in range(1, len(dp_matrix[0]),1):
+        dp_matrix[0][c] = False
+        
     # 2. iteratively fill rest of dp_matrix
+    for r in range(1, len(dp_matrix),1):
+        for c in range(1, len(dp_matrix[0]),1):
+            # if the cell above is true, the current cell is true
+            if dp_matrix[r-1][c]:
+                dp_matrix[r][c] = True
+            # check if we could make a sub-sum of the other elements not in this subset, such that the sub-sums value is equal to (the current column) - (the last element in the current subset).
+            else:
+                # check if any cell on the row above has a solution for c - P[r-1]
+                other_c = c - P[r-1]
+                # all cells on the row above with a column-index less than this cell will have been calculated at this point, thus other_c will index a boolean value or negative 
+                # check if the other_c is indexes a valid cell
+                if other_c >= 0:
+                    dp_matrix[r][c] = dp_matrix[r-1][other_c]
+                else:
+                    dp_matrix[r][c] = False
+                
     # 3. return the result from the dp_matrix
-    pass
+    return dp_matrix[-1][-1]
 
 
 def weightlifting_list(P: List[int], w: int,
