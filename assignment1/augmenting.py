@@ -11,7 +11,7 @@ from typing import *
 '''
 Assignment 1, Problem 2: Augmenting Path Detection in Network Graphs
 
-Student Name:
+Student Name: Edvin Bruce
 '''
 
 '''
@@ -46,16 +46,38 @@ def augmenting(G: Graph, s: str, t: str) -> bool:
     Post:
     Ex:
     '''
+        
+    def aux(G: Graph, visited: List[str], current: str) -> bool:
+        if current == t:
+            return True
 
+        visited.append(current)
+        for neighbour in G._edges[current]:
+            if neighbour not in visited and G.flow(current, neighbour) < G.capacity(current, neighbour):
+                if aux(G, visited, neighbour):
+                    return True
+        return False
+    
+    return aux(G, [], s)
 
-def augmenting_extended(G: Graph,
-                        s: str, t: str) -> Tuple[bool, List[Tuple[str, str]]]:
-    '''
-    Pre:
-    Post:
-    Ex:
-    '''
+def augmenting_extended(G: Graph, s: str, t: str) -> Tuple[bool, List[Tuple[str, str]]]:
+    stack = [(s, [])]  # used to store the current node and the path to it, we add to this when we visit a new node
+    visited = set() # used to store the visited nodes
 
+    while stack:
+        current, path_edges = stack.pop()
+        if current in visited:
+            continue
+        visited.add(current)
+
+        if current == t:
+            return (True, path_edges)
+
+        for neighbor in G._edges[current]:
+            if neighbor not in visited and G.flow(current, neighbor) < G.capacity(current, neighbor):
+                stack.append((neighbor, path_edges + [(current, neighbor)]))
+
+    return (False, [])
 
 class AugmentingTest(unittest.TestCase):
     '''

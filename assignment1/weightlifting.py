@@ -40,8 +40,8 @@ forever after.
 __all__ = ['weightlifting_recursive', 'weightlifting_top_down',
            'weightlifting_bottom_up', 'weightlifting_list']
 
-
-# recursion variant:
+    
+# recursion variant: The pair (w, p) strictly decreases in at each recursive call. "p" is always decremented by 1, and "w" is decremented in one of the two recursive calls.
 def weightlifting_recursive(P: List[int], w: int, p: int) -> bool:
     '''
     Pre:  for 0 <= i < len(P): P[i] >= 0
@@ -60,6 +60,7 @@ def weightlifting_recursive(P: List[int], w: int, p: int) -> bool:
     # 2. add recursive case(s)
     return weightlifting_recursive(P, w - P[p-1], p - 1) or weightlifting_recursive(P, w, p - 1) # Either we choose the weight or we don't
 
+# recursion variant: The pair (w, P) strictly decreases in size at each recursive call. The size of "P" is decremented by 1, and "w" is decremented in one of the two recursive calls. 
 def weightlifting_top_down(P: List[int], w: int,
                            dp_matrix: List[List[None]]) -> bool:
     '''
@@ -98,19 +99,16 @@ def weightlifting_bottom_up(P: List[int], w: int,
           weightlifting_bottom_up(P, 299, dp_matrix) returns True
           weightlifting_bottom_up(P, 11, dp_matrix) returns False
     '''    
-    # print(f"len(P): {len(P)}")
-    # print(f"w: {w}")
-    # print(dp_matrix)
 
     # 1. Fill first column and row of dp_matrix
     for r in range(len(dp_matrix)):  
         dp_matrix[r][0] = True 
-    for c in range(1, len(dp_matrix[0]),1):
+    for c in range(1, len(dp_matrix[0])):
         dp_matrix[0][c] = False
         
     # 2. iteratively fill rest of dp_matrix
-    for r in range(1, len(dp_matrix),1):
-        for c in range(1, len(dp_matrix[0]),1):
+    for r in range(1, len(dp_matrix)):
+        for c in range(1, len(dp_matrix[0])):
             # if the cell above is true, the current cell is true
             if dp_matrix[r-1][c]:
                 dp_matrix[r][c] = True
@@ -139,7 +137,46 @@ def weightlifting_list(P: List[int], w: int,
           weightlifting_list(P, 299) returns a permutation of [2, 7, 56, 234]
           weightlifting_list(P, 11) returns []
     '''
-    pass
+    
+    # maps each cell in the dp_matrix to a list of the plates used to reach that cell
+    components_map = {}
+    # 1. Fill first column and row of dp_matrix
+    for r in range(len(dp_matrix)):  
+        dp_matrix[r][0] = True 
+    for c in range(1, len(dp_matrix[0])):
+        dp_matrix[0][c] = False
+    
+    # 2. iteratively fill rest of dp_matrix
+    for r in range(1, len(dp_matrix)):
+        for c in range(1, len(dp_matrix[0])):
+            # if the cell above is true, the current cell is true
+            if dp_matrix[r-1][c]:
+                dp_matrix[r][c] = True
+                # the weights used to reach this cell is the same as the weights used to reach the cell above
+                components_map[(r,c)] = components_map[(r-1,c)]
+            else:
+                # check if any cell on the row above has a solution for c - P[r-1]. If that is the case, the current cell is also a solution as we can add the current plate to the solution for c - P[r-1]
+                other_c = c - P[r-1]
+                # all cells on the row above with a column-index less than this cell will have been calculated at this point, thus other_c will index a boolean value or negative 
+                # check if the other_c is indexes a cell in the dp_matrix (in this case not negative)
+                if other_c >= 0:                    
+                    dp_matrix[r][c] = dp_matrix[r-1][other_c]
+                    # if the solution cell is on the far left of the matrix, the solution is the current plate (P[r-1])
+                    if other_c == 0:
+                        components_map[(r,c)] = [P[r-1]]
+                    # if the solution cell is not on the far left, the solution is the solution cells weights + the current plate (P[r-1])
+                    elif (r-1,other_c) in components_map:
+                            components_map[(r,c)] = components_map[(r-1,other_c)] + [P[r-1]]
+                else:
+                    dp_matrix[r][c] = False
+    
+    # 3. return the result from the dp_matrix
+    last_idx = (len(dp_matrix)-1,len(dp_matrix[0])-1)
+    if (last_idx) in components_map:
+        return components_map[last_idx]
+    else:
+        return []    
+    
 
 
 class WeightliftingTest(unittest.TestCase):
