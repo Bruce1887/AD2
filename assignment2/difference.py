@@ -51,6 +51,38 @@ def min_difference(s: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     '''
     # To get the resemblance between two letters, use code like this:
     # difference = R['a']['b']
+    
+    dp_dict = {}
+    def min_diff_aux(s: str, r: str) -> int:
+        # if one of the strings is empty, the cost is the sum of the differences between the "remaining" characters and the '-' character    
+        if not s or not r:
+            cost = 0
+            for char in s + r:
+                if char in s:
+                    cost += R[char]['-']
+                else:
+                    cost += R['-'][char]
+            return cost
+
+        if (s, r) in dp_dict:
+            return dp_dict[(s, r)]
+
+        #recursive case:
+        if s[0] == r[0]:
+            return min_diff_aux(s[1:], r[1:])
+        else:
+            # the cost of changing the character
+            change = R[s[0]][r[0]] + min_diff_aux(s[1:], r[1:])
+            #the cost of skipping a character in s
+            skip_s = R[s[0]]['-'] + min_diff_aux(s[1:], r)
+            #the cost of skipping a character in r
+            skip_r = R['-'][r[0]] + min_diff_aux(s, r[1:])
+            # the minimum cost of the three options
+            min_diff = min(skip_s, skip_r, change)
+            dp_dict[(s, r)] = min_diff
+            return min_diff
+    
+    return min_diff_aux(s, r)
 
 
 def min_difference_align(s: str, r: str,
@@ -65,7 +97,53 @@ def min_difference_align(s: str, r: str,
                                     3, 'dinam-ck', 'dynamic-'
                                  or 3, 'dinamck', 'dynamic'
     '''
+    print(f"s: {s}, r: {r}")
+    
+    dp_dict = {}
+    def min_diff_align_aux(s: str, r: str) -> Tuple[int,str,str]:
+        # if one of the strings is empty, the cost is the sum of the differences between the "remaining" characters and the '-' character    
+        if not s or not r:
+            cost = 0
+            for char in s + r:
+                if char in s:
+                    cost += R[char]['-']
+                else:
+                    cost += R['-'][char]
+            return (cost, s, r)
 
+        if (s, r) in dp_dict:
+            return dp_dict[(s, r)]
+
+        #recursive case:
+        if s[0] == r[0]:
+            return min_diff_align_aux(s[1:], r[1:])
+        else:
+            # TUPLES ARE IMMUTABLE IN PYTHON APPARENTLY
+            
+            # the cost of changing the character
+            change: Tuple[int,str,str] = min_diff_align_aux(s[1:], r[1:])
+            new_change = (R[s[0]][r[0]] + change[0], change[1], change[2])
+            
+            #the cost of skipping a character in s
+            skip_s: Tuple[int,str,str] = min_diff_align_aux(s[1:], r)
+            new_skip_s = (R[s[0]]['-'] + skip_s[0], skip_s[1], skip_s[2])
+            
+            #the cost of skipping a character in r
+            skip_r: Tuple[int,str,str] = min_diff_align_aux(s, r[1:])
+            new_skip_r = (R['-'][r[0]] + skip_r[0], skip_r[1], skip_r[2])
+            
+            print(f"new_change: {new_change}")
+            print(f"new_skip_s: {new_skip_s}")
+            print(f"new_skip_r: {new_skip_r}")
+            
+            # the minimum cost of the three options
+            min_diff = min(new_skip_s, new_skip_r, new_change, key=lambda x: x[0])
+            dp_dict[(s, r)] = min_diff
+            return min_diff
+    
+    rval = min_diff_align_aux(s, r)
+    print(f"rval: {rval}\n")
+    return rval
 
 def qwerty_distance() -> Dict[str, Dict[str, int]]:
     '''
