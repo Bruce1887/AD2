@@ -119,18 +119,17 @@ def min_difference_align(s: str, r: str,
             return min_diff_align_aux(s[1:], r[1:])
         else:
             # TUPLES ARE IMMUTABLE IN PYTHON APPARENTLY
-            
             # the cost of changing the character
             change: Tuple[int,str,str] = min_diff_align_aux(s[1:], r[1:])
-            new_change = (R[s[0]][r[0]] + change[0], change[1], change[2])
+            new_change = (R[s[0]][r[0]] + change[0], change[1][1:], change[2][1:])
             
             #the cost of skipping a character in s
             skip_s: Tuple[int,str,str] = min_diff_align_aux(s[1:], r)
             new_skip_s = (R[s[0]]['-'] + skip_s[0], skip_s[1], skip_s[2])
-            
+                        
             #the cost of skipping a character in r
             skip_r: Tuple[int,str,str] = min_diff_align_aux(s, r[1:])
-            new_skip_r = (R['-'][r[0]] + skip_r[0], skip_r[1], skip_r[2])
+            new_skip_r = (R[s[0]]['-'] + skip_s[0], skip_r[1], skip_r[2])
             
             print(f"new_change: {new_change}")
             print(f"new_skip_s: {new_skip_s}")
@@ -230,7 +229,7 @@ class MinDifferenceTest(unittest.TestCase):
         self.assertEqual(len(res_s), len(res_r), f'len("{s}") != len("{r}")')
 
         res_sum = sum((R[res_s[i]][res_r[i]] for i in range(len(res_s))))
-
+        
         self.assertEqual(res_sum, difference,
                          f'Difference for s="{s}", r={r}, res_r={res_s}, and '
                          f'r="{res_r}" was summed to {res_sum}, {difference}'
