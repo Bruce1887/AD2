@@ -97,8 +97,7 @@ def min_difference_align(s: str, r: str,
                                     3, 'dinam-ck', 'dynamic-'
                                  or 3, 'dinamck', 'dynamic'
     '''
-    print(f"s: {s}, r: {r}")
-    
+    # print(f"s: {s}, r: {r}")
     dp_dict = {}
     def min_diff_align_aux(s: str, r: str) -> Tuple[int,str,str]:
         # if one of the strings is empty, the cost is the sum of the differences between the "remaining" characters and the '-' character    
@@ -107,8 +106,10 @@ def min_difference_align(s: str, r: str,
             for char in s + r:
                 if char in s:
                     cost += R[char]['-']
+                    r += '-'
                 else:
                     cost += R['-'][char]
+                    s += '-'
             return (cost, s, r)
 
         if (s, r) in dp_dict:
@@ -116,33 +117,28 @@ def min_difference_align(s: str, r: str,
 
         #recursive case:
         if s[0] == r[0]:
-            return min_diff_align_aux(s[1:], r[1:])
+            same = min_diff_align_aux(s[1:], r[1:])
+            new_same = (same[0], s[0] + same[1], r[0] + same[2])
+            return new_same
         else:
-            # TUPLES ARE IMMUTABLE IN PYTHON APPARENTLY
             # the cost of changing the character
             change: Tuple[int,str,str] = min_diff_align_aux(s[1:], r[1:])
-            new_change = (R[s[0]][r[0]] + change[0], change[1][1:], change[2][1:])
+            new_change = (R[s[0]][r[0]] + change[0], s[0] + change[1], r[0] +  change[2])
             
             #the cost of skipping a character in s
-            skip_s: Tuple[int,str,str] = min_diff_align_aux(s[1:], r)
-            new_skip_s = (R[s[0]]['-'] + skip_s[0], skip_s[1], skip_s[2])
+            skip_s: Tuple[int,str,str] = min_diff_align_aux(s[1:], r)            
+            new_skip_s = (R[s[0]]['-'] + skip_s[0], s[0] + skip_s[1], '-' + skip_s[2] )
                         
             #the cost of skipping a character in r
             skip_r: Tuple[int,str,str] = min_diff_align_aux(s, r[1:])
-            new_skip_r = (R[s[0]]['-'] + skip_s[0], skip_r[1], skip_r[2])
+            new_skip_r = (R['-'][r[0]] + skip_r[0], '-' + skip_r[1], r[0] + skip_r[2])
             
-            print(f"new_change: {new_change}")
-            print(f"new_skip_s: {new_skip_s}")
-            print(f"new_skip_r: {new_skip_r}")
-            
-            # the minimum cost of the three options
-            min_diff = min(new_skip_s, new_skip_r, new_change, key=lambda x: x[0])
+            # the minimum cost of the three options (either change, skip_s or skip_r)
+            min_diff: Tuple[int,str,str] = min(new_skip_s, new_skip_r, new_change, key=lambda x: x[0])
             dp_dict[(s, r)] = min_diff
             return min_diff
     
-    rval = min_diff_align_aux(s, r)
-    print(f"rval: {rval}\n")
-    return rval
+    return min_diff_align_aux(s, r)    
 
 def qwerty_distance() -> Dict[str, Dict[str, int]]:
     '''
