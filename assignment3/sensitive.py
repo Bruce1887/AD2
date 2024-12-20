@@ -11,7 +11,7 @@ from typing import *
 '''
 Assignment 3, Problem 1: Controlling the Maximum Flow
 
-Student Name:
+Student Name: Edvin Bruce
 '''
 
 '''
@@ -47,6 +47,43 @@ def sensitive(G: Graph, s: str, t: str) -> Union[Tuple[str, str],
     Post:
     Ex:   sensitive(g1, 'a', 'f') = ('b', 'd')
     '''
+    
+    residual_graph: Graph = Graph(True)
+    
+    for u, v in G.edges:
+        flow = G.flow(u, v) or 0
+        residual = (G.capacity(u, v) or 0) - flow
+        if residual > 0:
+            residual_graph.add_edge(u, v, capacity= residual)
+        if flow > 0:
+            residual_graph.add_edge(v, u, capacity= G.flow(u, v) )
+    
+    if not residual_graph.edges:
+        return None, None        
+
+    def find_visited(G: Graph, s: str, t: str) -> set:    
+        stack = [s]
+        visited = {s}
+
+        while stack:
+            u = stack.pop()  
+            if u == t:
+                return visited
+            for v in G.neighbors(u): 
+                capacity = G.capacity(u, v) or 0
+                flow = G.flow(u, v) or 0
+                if v not in visited and capacity > flow:
+                    visited.add(v)
+                    stack.append(v)
+        return visited     
+    
+    visited = find_visited(residual_graph, s, t)        
+    
+    for node in visited:        
+        for neighbor in G.neighbors(node):            
+            if neighbor not in visited:                
+                return node, neighbor
+
     return None, None
 
 

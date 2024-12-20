@@ -10,7 +10,7 @@ from typing import *
 '''
 Assignment 3, Problem 2: Party Seating
 
-Student Name:
+Student Name: Edvin Bruce
 '''
 
 '''
