@@ -11,7 +11,7 @@ from typing import *
 '''
 Assignment 2, Problem 2: Recomputing a Minimum Spanning Tree
 
-Student Name:
+Student Name: Edvin Bruce
 '''
 
 '''
@@ -53,6 +53,8 @@ def update_MST_1(G: Graph, T: Graph, e: Tuple[str, str],
     '''
     (u, v) = e
     assert (e in G and e not in T and weight > G.weight(u, v))
+    G.set_weight(u, v, weight)
+    return None, None
 
 
 def update_MST_2(G: Graph, T: Graph, e: Tuple[str, str],
@@ -68,6 +70,45 @@ def update_MST_2(G: Graph, T: Graph, e: Tuple[str, str],
     '''
     (u, v) = e
     assert (e in G and e not in T and weight < G.weight(u, v))
+    
+    G.set_weight(u, v, weight)
+    T.add_edge(u, v, weight)
+    
+    def find_cycle(gr: Graph, s: str, t: str) -> List[Tuple[str, str]]:
+        stack = [(s, [])]  # used to store the current node and the path to it, we add to this when we visit a new node
+        visited = set(s) # used to store the visited nodes
+
+        while stack:
+            current, path_edges = stack.pop()
+            for neighbor in gr._edges[current]:
+                if neighbor not in visited and (current, neighbor) != e: # check if the neighbor is not visited, and that we dont just take the short way around the cycle
+                    if neighbor == t and len(path_edges) > 0:
+                        return path_edges + [(current, neighbor)]
+                    visited.add(neighbor)
+                    stack.append((neighbor, path_edges + [(current, neighbor)]))
+
+        return []
+
+    cycle = find_cycle(T, u, v) # find the cycle that is created by adding the edge 
+    cycle = cycle + [(u, v)] # tie the cycle together
+    
+    # find the edge with the highest weight in the cycle
+    max_weight = -math.inf
+    max_edge = None
+    for edge in cycle:
+        if T.weight(*edge) > max_weight:
+            max_weight = T.weight(*edge)
+            max_edge = edge    
+    T.remove_edge(*max_edge)
+    return max_edge, e
+        
+    
+    
+    
+    
+    
+
+    
 
 
 def update_MST_3(G: Graph, T: Graph, e: Tuple[str, str],
@@ -83,6 +124,8 @@ def update_MST_3(G: Graph, T: Graph, e: Tuple[str, str],
     '''
     (u, v) = e
     assert (e in G and e in T and weight < G.weight(u, v))
+    G.set_weight(u, v, weight)
+    return None, None
 
 
 def update_MST_4(G: Graph, T: Graph, e: Tuple[str, str],

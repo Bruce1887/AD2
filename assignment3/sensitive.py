@@ -54,9 +54,9 @@ def sensitive(G: Graph, s: str, t: str) -> Union[Tuple[str, str],
         flow = G.flow(u, v) or 0
         residual = (G.capacity(u, v) or 0) - flow
         if residual > 0:
-            residual_graph.add_edge(u, v, capacity= residual)
+            residual_graph.add_edge(u, v, capacity = residual)
         if flow > 0:
-            residual_graph.add_edge(v, u, capacity= G.flow(u, v) )
+            residual_graph.add_edge(v, u, capacity = flow)
     
     if not residual_graph.edges:
         return None, None        
@@ -66,9 +66,7 @@ def sensitive(G: Graph, s: str, t: str) -> Union[Tuple[str, str],
         visited = {s}
 
         while stack:
-            u = stack.pop()  
-            if u == t:
-                return visited
+            u = stack.pop()                          
             for v in G.neighbors(u): 
                 capacity = G.capacity(u, v) or 0
                 flow = G.flow(u, v) or 0
@@ -82,7 +80,7 @@ def sensitive(G: Graph, s: str, t: str) -> Union[Tuple[str, str],
     for node in visited:        
         for neighbor in G.neighbors(node):            
             if neighbor not in visited:                
-                return node, neighbor
+                return node, neighbor # sensitive edge found as per the max-cut min-flow theorem
 
     return None, None
 

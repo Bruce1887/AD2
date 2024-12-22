@@ -11,7 +11,7 @@ from typing import *
 '''
 Assignment 2, Problem 1: Search String Replacement
 
-Student Name:
+Student Name: Edvin Bruce
 '''
 
 '''
@@ -60,7 +60,7 @@ def min_difference(s: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
             for char in s + r:
                 if char in s:
                     cost += R[char]['-']
-                else:
+                else: 
                     cost += R['-'][char]
             return cost
 
