@@ -61,13 +61,13 @@ def sensitive(G: Graph, s: str, t: str) -> Union[Tuple[str, str],
     if not residual_graph.edges:
         return None, None        
 
-    def find_visited(G: Graph, s: str, t: str) -> set:    
-        stack = [s]
-        visited = {s}
+    def find_reachable(G: Graph, start: str) -> set:
+        stack = [start]
+        visited = {start}
 
         while stack:
-            u = stack.pop()                          
-            for v in G.neighbors(u): 
+            u = stack.pop()                 
+            for v in G.neighbors(u):
                 capacity = G.capacity(u, v) or 0
                 flow = G.flow(u, v) or 0
                 if v not in visited and capacity > flow:
@@ -75,11 +75,11 @@ def sensitive(G: Graph, s: str, t: str) -> Union[Tuple[str, str],
                     stack.append(v)
         return visited     
     
-    visited = find_visited(residual_graph, s, t)        
+    reachable = find_reachable(residual_graph, s)        
     
-    for node in visited:        
-        for neighbor in G.neighbors(node):            
-            if neighbor not in visited:                
+    for node in reachable:        
+        for neighbor in G.neighbors(node):
+            if neighbor not in reachable:
                 return node, neighbor # sensitive edge found as per the max-cut min-flow theorem
 
     return None, None

@@ -46,8 +46,23 @@ def party(known: List[Set[int]]) -> Tuple[bool, Set[int], Set[int]]:
     Post:
     Ex:   party([{1, 2}, {0}, {0}]) = True, {0}, {1, 2}
     '''
-    return False, set(), set()
+    seated = [set(), set()]
+    queue = deque()
+    for i in range(len(known)):
+        if i not in seated[0] and i not in seated[1]:
+            queue.append((i, 0)) # its arbitrary which table an unassigned guest is assigned to sit at
+            while queue:
+                guest, table = queue.popleft()
+                if guest in seated[table]:
+                    continue
+                seated[table].add(guest) # sit guest at table
+                for friend in known[guest]:
+                    if friend in seated[table]: # friend is already seated at the same table, so it's impossible to seat the guests
+                        return False, set(), set()
+                    if friend not in seated[1 - table]: # friend must be seated at the other table. thus assign friend to the other table (if not already seated)
+                        queue.append((friend, 1 - table))
 
+    return True, seated[0], seated[1]
 
 class PartySeatingTest(unittest.TestCase):
     '''
